@@ -1,38 +1,101 @@
 ﻿// Tree.h
-#pragma once
-#include <memory>
-#include <vector>
+#ifndef TREE_H
+#define TREE_H
+
 #include <iostream>
+using namespace std;
+
+template <typename T>
+struct TreeNode {
+    T data;
+    TreeNode* left;
+    TreeNode* right;
+
+    TreeNode(T val) {
+        data = val;
+        left = nullptr;
+        right = nullptr;
+    }
+};
+
 
 template <typename T>
 class Tree {
+private:
+    TreeNode<T>* root;
+
+
+    TreeNode<T>* insertRec(TreeNode<T>* node, T value) {
+        if (node == nullptr)
+            return new TreeNode<T>(value);
+
+        if (value < node->data)
+            node->left = insertRec(node->left, value);
+        else if (value > node->data)
+            node->right = insertRec(node->right, value);
+
+
+        return node;
+    }
+
+   
+    bool findRec(TreeNode<T>* node, T value) const {
+        if (node == nullptr)
+            return false;
+        if (value == node->data)
+            return true;
+        if (value < node->data)
+            return findRec(node->left, value);
+        else
+            return findRec(node->right, value);
+    }
+
+    
+    void clear(TreeNode<T>* node) {
+        if (node == nullptr)
+            return;
+        clear(node->left);
+        clear(node->right);
+        delete node;
+    }
+
 public:
-    struct Node {
-        T data;
-        std::weak_ptr<Node> parent;
-        std::vector<std::shared_ptr<Node>> children;
-
-        explicit Node(const T& value) : data(value) {}
-    };
-
-    std::shared_ptr<Node> root;
-
-    Tree() = default;
-    explicit Tree(const T& rootValue) {
-        root = std::make_shared<Node>(rootValue);
+   
+    Tree() {
+        root = nullptr;
     }
 
-    std::shared_ptr<Node> addChild(std::shared_ptr<Node> parent, const T& value) {
-        auto child = std::make_shared<Node>(value);
-        child->parent = parent;
-        parent->children.push_back(child);
-        return child;
+    ~Tree() {
+        clear(root);
     }
 
-    void print(const std::shared_ptr<Node>& node, int depth = 0) const {
-        if (!node) return;
-        std::cout << std::string(depth * 2, ' ') << node->data << "\n";
-        for (const auto& child : node->children)
-            print(child, depth + 1);
+    void insert(T value) {
+        root = insertRec(root, value);
+    }
+
+  
+    bool find(T value) const {
+        return findRec(root, value);
+    }
+
+    
+    TreeNode<T>* getRoot() const {
+        return root;
+    }
+
+    
+    void inorderPrint(TreeNode<T>* node) const {
+        if (node == nullptr)
+            return;
+        inorderPrint(node->left);
+        cout << node->data << " ";
+        inorderPrint(node->right);
+    }
+
+    void display() const {
+        inorderPrint(root);
+        cout << endl;
     }
 };
+
+#endif
